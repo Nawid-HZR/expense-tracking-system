@@ -46,6 +46,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse> handleGeneral(Exception ex){
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse(false, "Something went wrong"));
+                .body(new ApiResponse(false, ex.getMessage()));
     }
 }
