@@ -1,6 +1,5 @@
 package com.nawid.expense_tracking_system.application.usecase.user;
 
-import com.nawid.expense_tracking_system.application.exception.EmailAlreadyExistsException;
 import com.nawid.expense_tracking_system.domain.enums.Role;
 import com.nawid.expense_tracking_system.domain.model.User;
 import com.nawid.expense_tracking_system.domain.repository.UserRepository;
@@ -9,30 +8,30 @@ import com.nawid.expense_tracking_system.presentation.dto.response.ApiResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 @Service
-public class CreateUserUseCase {
+public class UpdateAdminUseCase {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CreateUserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UpdateAdminUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ApiResponse createUser(UserRequest request) {
+    public ApiResponse updateAdmin(UserRequest user){
 
-        if(userRepository.existsByEmail(request.getEmail())){
-            throw new EmailAlreadyExistsException("user already exists");
-        }
+        User admin = userRepository.findByRole(Role.ADMIN)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.USER);
+        admin.setEmail(user.getEmail());
+        admin.setName(user.getName());
+        admin.setRole(Role.ADMIN);
+        admin.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        userRepository.save(user);
-        return new ApiResponse(true, "User created successfully");
+        userRepository.save(admin);
+
+        return new ApiResponse(true, "Admin updated successfully");
     }
 }

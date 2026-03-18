@@ -1,6 +1,6 @@
 package com.nawid.expense_tracking_system.presentation.dto.request;
 
-public class SignUpRequest {
+public class UserRequest {
     private String name;
     private String email;
     private String password;

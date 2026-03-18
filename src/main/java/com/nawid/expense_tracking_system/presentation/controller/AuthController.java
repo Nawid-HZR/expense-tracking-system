@@ -2,39 +2,37 @@ package com.nawid.expense_tracking_system.presentation.controller;
 
 
 
-import com.nawid.expense_tracking_system.application.usecase.user.CreateManagerUseCase;
-import com.nawid.expense_tracking_system.application.usecase.user.CreateUserUseCase;
+import com.nawid.expense_tracking_system.application.usecase.user.*;
 import com.nawid.expense_tracking_system.infrastructure.security.jwt.JwtUtil;
 import com.nawid.expense_tracking_system.presentation.dto.request.LoginRequest;
-import com.nawid.expense_tracking_system.presentation.dto.request.SignUpRequest;
+import com.nawid.expense_tracking_system.presentation.dto.request.UserRequest;
+import com.nawid.expense_tracking_system.presentation.dto.response.ApiResponse;
 import com.nawid.expense_tracking_system.presentation.dto.response.LoginResponse;
-import com.nawid.expense_tracking_system.presentation.dto.response.SignUpResponse;
-import org.springframework.http.HttpStatus;
+import com.nawid.expense_tracking_system.presentation.dto.response.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private AuthenticationManager authenticationManager;
-    private JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
-    private CreateUserUseCase createUserUseCase;
-    private CreateManagerUseCase createManagerUseCase;
+    private final GetAdminUseCase getAdminUseCase;
+    private final UpdateAdminUseCase updateAdminUseCase;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CreateUserUseCase createUserUseCase, CreateManagerUseCase createManagerUseCase) {
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, GetAdminUseCase getAdminUseCase, UpdateAdminUseCase updateAdminUseCase) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.createUserUseCase = createUserUseCase;
-        this.createManagerUseCase = createManagerUseCase;
+        this.getAdminUseCase = getAdminUseCase;
+        this.updateAdminUseCase = updateAdminUseCase;
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
@@ -52,20 +50,24 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @PostMapping("/admin/create-user")
-    public ResponseEntity<SignUpResponse> createUser(@RequestBody SignUpRequest request){
 
-        SignUpResponse response = createUserUseCase.createUser(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PreAuthorize(("hasRole('ADMIN')"))
+    @GetMapping("/admin")
+    public ResponseEntity<UserResponse> getAdmin(){
+        UserResponse response = getAdminUseCase.getAdmin();
+        return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/create-manager")
-    public ResponseEntity<SignUpResponse> createManager(@RequestBody SignUpRequest request){
-
-        SignUpResponse response = createManagerUseCase.createManager(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    @PreAuthorize(("hasRole('ADMIN')"))
+    @PutMapping("/admin")
+    public ResponseEntity<ApiResponse> updateAdmin(@RequestBody UserRequest admin){
+        ApiResponse response = updateAdminUseCase.updateAdmin(admin);
+        return ResponseEntity.ok(response);
     }
+
+
+
+
+
 
 }

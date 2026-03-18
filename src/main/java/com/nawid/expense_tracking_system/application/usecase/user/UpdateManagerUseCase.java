@@ -1,6 +1,7 @@
 package com.nawid.expense_tracking_system.application.usecase.user;
 
-import com.nawid.expense_tracking_system.application.exception.EmailAlreadyExistsException;
+
+import com.nawid.expense_tracking_system.application.exception.UserNotFoundException;
 import com.nawid.expense_tracking_system.domain.enums.Role;
 import com.nawid.expense_tracking_system.domain.model.User;
 import com.nawid.expense_tracking_system.domain.repository.UserRepository;
@@ -10,29 +11,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CreateUserUseCase {
+public class UpdateManagerUseCase {
+
+
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CreateUserUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UpdateManagerUseCase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ApiResponse createUser(UserRequest request) {
 
-        if(userRepository.existsByEmail(request.getEmail())){
-            throw new EmailAlreadyExistsException("user already exists");
-        }
+    public ApiResponse updateManager(String email, UserRequest request){
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.USER);
+        User manager = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        userRepository.save(user);
-        return new ApiResponse(true, "User created successfully");
+        manager.setEmail(request.getEmail());
+        manager.setName(request.getName());
+        manager.setRole(Role.MANAGER);
+        manager.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        userRepository.save(manager);
+
+        return new ApiResponse(true, "Manager updated successfully");
     }
 }

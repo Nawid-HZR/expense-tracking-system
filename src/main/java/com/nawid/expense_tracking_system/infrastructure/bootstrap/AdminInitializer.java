@@ -23,15 +23,15 @@ public class AdminInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        String adminEmail = "admin@gmail.com";
+        boolean existsAdmin = userRepository.existsByRole(Role.ADMIN);
 
-        if (userRepository.existsByEmail(adminEmail)) {
+        if (existsAdmin) {
             return;
         }
 
         User admin = new User();
         admin.setName("Admin");
-        admin.setEmail(adminEmail);
+        admin.setEmail("admin@gmail.com");
         admin.setPassword(passwordEncoder.encode("admin"));
         admin.setRole(Role.ADMIN);
         userRepository.save(admin);
